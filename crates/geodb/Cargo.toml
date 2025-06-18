@@ -1,0 +1,41 @@
+[package]
+name = "geodb"
+description = "Manages the local cache of terrain tiles and CPU requests for height data."
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+readme.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+approx.workspace = true
+bevy.workspace = true
+crossbeam.workspace = true
+glam.workspace = true
+itertools.workspace = true
+log.workspace = true
+md5.workspace = true
+parking_lot.workspace = true
+progress-streams.workspace = true
+rapier3d-f64.workspace = true
+rayon.workspace = true
+smallvec.workspace = true
+structopt.workspace = true
+zerocopy.workspace = true
+# internal deps
+absolute_unit.workspace = true
+geodesy.workspace = true
+geometry.workspace = true
+nitrous.workspace = true
+packed_struct.workspace = true
+phase.workspace = true
+runtime.workspace = true
+xz_wrapper.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+memmap2.workspace = true
+ureq = "^ 2.6"

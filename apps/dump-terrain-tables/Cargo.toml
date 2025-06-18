@@ -1,0 +1,17 @@
+[package]
+name = "dump-terrain-tables"
+description.workspace = true
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+readme.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+glam.workspace = true
+clap.workspace = true
+

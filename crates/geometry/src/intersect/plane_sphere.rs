@@ -1,0 +1,166 @@
+// This file is part of Nitrogen.
+//
+// Nitrogen is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Nitrogen is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
+use crate::{Circle, Plane, Sphere};
+use absolute_unit::prelude::*;
+use std::fmt::Debug;
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum PlaneSide {
+    Above,
+    On,
+    Below,
+}
+
+impl PlaneSide {
+    pub fn from_distance(d: f64) -> Self {
+        if d < 0_f64 {
+            PlaneSide::Below
+        } else if d > 0_f64 {
+            PlaneSide::Above
+        } else {
+            PlaneSide::On
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum SpherePlaneIntersection<Unit>
+where
+    Unit: LengthUnit,
+{
+    NoIntersection {
+        distance: Length<Unit>, // Closest distance between the sphere and the plane
+        side: PlaneSide,        // What side of the plane is the sphere on.
+    },
+    Intersection(Circle<Unit>),
+}
+
+impl<Unit> SpherePlaneIntersection<Unit>
+where
+    Unit: LengthUnit,
+{
+    pub fn is_intersecting(&self) -> bool {
+        match self {
+            Self::NoIntersection { .. } => false,
+            Self::Intersection(_) => true,
+        }
+    }
+}
+
+pub fn sphere_vs_plane<Unit: LengthUnit>(
+    sphere: &Sphere<Unit>,
+    plane: &Plane<Unit>,
+) -> SpherePlaneIntersection<Unit> {
+    let dist = plane.distance_to_point(sphere.center());
+
+    let r = sphere.radius();
+    if dist.abs() < r {
+        let to_sphere = r - ((r - dist) * -dist.signum());
+        let center = *sphere.center() + (*plane.normal() * to_sphere);
+        return SpherePlaneIntersection::Intersection(Circle::from_plane_center_and_radius(
+            Plane::from_point_and_normal(center, *plane.normal()),
+            center,
+            (sphere.radius() * sphere.radius() - dist * dist).sqrt(),
+        ));
+    }
+    SpherePlaneIntersection::NoIntersection {
+        distance: dist.abs() - sphere.radius(),
+        side: PlaneSide::from_distance(dist.f64()),
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use approx::assert_relative_eq;
+    use glam::DVec3;
+
+    #[test]
+    fn test_sphere_fully_above_plane() {
+        let sphere = Sphere::from_center_and_radius(Pt3::zero(), meters!(1f64));
+        let plane = Plane::from_point_and_normal(Pt3::new_unit(100f64, -2f64, 100f64), DVec3::Y);
+
+        let intersect = sphere_vs_plane(&sphere, &plane);
+        assert!(!intersect.is_intersecting());
+        match intersect {
+            SpherePlaneIntersection::NoIntersection { distance, side } => {
+                assert_relative_eq!(distance, meters!(1f64));
+                assert_eq!(side, PlaneSide::Above);
+            }
+            SpherePlaneIntersection::Intersection(_) => panic!("intersecting?"),
+        }
+    }
+
+    #[test]
+    fn test_sphere_fully_below_plane() {
+        let sphere = Sphere::from_center_and_radius(Pt3::zero(), meters!(1f64));
+        let plane = Plane::from_point_and_normal(Pt3::new_unit(100f64, 2f64, 100f64), DVec3::Y);
+
+        let intersect = sphere_vs_plane(&sphere, &plane);
+        assert!(!intersect.is_intersecting());
+        match intersect {
+            SpherePlaneIntersection::NoIntersection { distance, side } => {
+                assert_relative_eq!(distance, meters!(1f64));
+                assert_eq!(side, PlaneSide::Below);
+            }
+            SpherePlaneIntersection::Intersection(_) => panic!("intersecting?"),
+        }
+    }
+
+    #[test]
+    fn test_sphere_on_plane() {
+        let sphere = Sphere::from_center_and_radius(Pt3::zero(), meters!(1f64));
+        let plane = Plane::from_point_and_normal(Pt3::new_unit(100f64, 0f64, 100f64), DVec3::Y);
+
+        let intersect = sphere_vs_plane(&sphere, &plane);
+        assert!(intersect.is_intersecting());
+        match intersect {
+            SpherePlaneIntersection::NoIntersection { .. } => panic!("non-intersecting?"),
+            SpherePlaneIntersection::Intersection(ref circle) => {
+                assert_relative_eq!(circle.radius(), meters!(1f64));
+            }
+        }
+    }
+
+    #[test]
+    fn test_sphere_above_plane() {
+        let sphere = Sphere::from_center_and_radius(Pt3::zero(), meters!(1f64));
+        let plane = Plane::from_point_and_normal(Pt3::new_unit(100f64, -0.5f64, 100f64), DVec3::Y);
+
+        let intersect = sphere_vs_plane(&sphere, &plane);
+        assert!(intersect.is_intersecting());
+        match intersect {
+            SpherePlaneIntersection::NoIntersection { .. } => panic!("non-intersecting?"),
+            SpherePlaneIntersection::Intersection(ref circle) => {
+                assert_relative_eq!(circle.radius(), meters!((0.5f64 / 1.0).acos().sin()));
+            }
+        }
+    }
+
+    #[test]
+    fn test_sphere_below_plane() {
+        let sphere = Sphere::from_center_and_radius(Pt3::zero(), meters!(1f64));
+        let plane = Plane::from_point_and_normal(Pt3::new_unit(100f64, 0.5f64, 100f64), DVec3::Y);
+
+        let intersect = sphere_vs_plane(&sphere, &plane);
+        assert!(intersect.is_intersecting());
+        match intersect {
+            SpherePlaneIntersection::NoIntersection { .. } => panic!("non-intersecting?"),
+            SpherePlaneIntersection::Intersection(ref circle) => {
+                assert_relative_eq!(circle.radius(), meters!((0.5f64 / 1.0).acos().sin()));
+            }
+        }
+    }
+}

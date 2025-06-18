@@ -1,0 +1,19 @@
+[package]
+name = "geometry"
+description.workspace = true
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+readme.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+approx.workspace = true
+glam.workspace = true
+num-traits.workspace = true
+#rapier3d-f64.workspace = true
+# Internal
+absolute_unit.workspace = true
