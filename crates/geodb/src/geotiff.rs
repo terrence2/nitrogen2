@@ -33,10 +33,10 @@ use glam::DVec2;
 use itertools::Itertools;
 use log::{error, trace};
 use parking_lot::{Mutex, RwLock};
-use rapier3d_f64::parry::{
-    na::{DMatrix, Isometry3, UnitQuaternion, Vector3},
-    shape::HeightField,
-};
+// use rapier3d_f64::parry::{
+//     na::{DMatrix, Isometry3, UnitQuaternion, Vector3},
+//     shape::HeightField,
+// };
 use rayon::Scope;
 use smallvec::SmallVec;
 use std::{
@@ -371,51 +371,51 @@ impl SampleGrid {
         TriMesh::new(points, tris, edges)
     }
 
-    pub fn to_height_field(&self) -> (HeightField, Isometry3<f64>) {
-        let floor_asl = self
-            .samples
-            .iter()
-            .min_by(|&a, &b| a.geodetic.asl::<Meters>().cmp(&b.geodetic.asl()))
-            .expect("a minimum asl")
-            .geodetic
-            .asl::<Meters>();
-
-        // Origin is in the center of the geode, at sea level, pointing local forward
-        let lo = *self.sample(0, 0).geodetic().geode();
-        let hi = *self
-            .sample(self.width as usize, self.height as usize)
-            .geodetic()
-            .geode();
-        let lat = lo.lat::<Degrees>() + (hi.lat::<Degrees>() - lo.lat::<Degrees>()) / scalar!(2);
-        let lon = lo.lon::<Degrees>() + (hi.lon::<Degrees>() - lo.lon::<Degrees>()) / scalar!(2);
-        let center_geo = Geodetic::new(lat, lon, floor_asl);
-
-        let px_size = self.level.pixel_extent();
-
-        let heights = DMatrix::<f64>::from_row_iterator(
-            self.height as usize + 1,
-            self.width as usize + 1,
-            self.samples
-                .iter()
-                .map(|v| (v.geodetic().asl::<Meters>() - floor_asl).f64()),
-        );
-        let size_x = px_size * center_geo.lat::<Radians>().cos() * scalar!(self.width);
-        let size_z = px_size * scalar!(self.height);
-        let scale = Vector3::new(size_x.f64(), 1.0, size_z.f64());
-        let field = HeightField::new(heights, scale);
-
-        // Points are projected "up" from our basis, so it's important that we pick the tangent
-        // at the surface, rather than a point at the edge, given the curvature.
-        let dir = Bearing::north().dvec3_at_geo(PitchCline::level(), center_geo.geode());
-
-        let center = center_geo.pt3::<Meters>().na_dvec3();
-        let up = center.normalize();
-        let (axis, angle) = UnitQuaternion::face_towards(&dir.into(), &up)
-            .axis_angle()
-            .unwrap();
-        let iframe = Isometry3::new(center, angle * axis.into_inner());
-        (field, iframe)
-    }
+    // pub fn to_height_field(&self) -> (HeightField, Isometry3<f64>) {
+    //     let floor_asl = self
+    //         .samples
+    //         .iter()
+    //         .min_by(|&a, &b| a.geodetic.asl::<Meters>().cmp(&b.geodetic.asl()))
+    //         .expect("a minimum asl")
+    //         .geodetic
+    //         .asl::<Meters>();
+    //
+    //     // Origin is in the center of the geode, at sea level, pointing local forward
+    //     let lo = *self.sample(0, 0).geodetic().geode();
+    //     let hi = *self
+    //         .sample(self.width as usize, self.height as usize)
+    //         .geodetic()
+    //         .geode();
+    //     let lat = lo.lat::<Degrees>() + (hi.lat::<Degrees>() - lo.lat::<Degrees>()) / scalar!(2);
+    //     let lon = lo.lon::<Degrees>() + (hi.lon::<Degrees>() - lo.lon::<Degrees>()) / scalar!(2);
+    //     let center_geo = Geodetic::new(lat, lon, floor_asl);
+    //
+    //     let px_size = self.level.pixel_extent();
+    //
+    //     let heights = DMatrix::<f64>::from_row_iterator(
+    //         self.height as usize + 1,
+    //         self.width as usize + 1,
+    //         self.samples
+    //             .iter()
+    //             .map(|v| (v.geodetic().asl::<Meters>() - floor_asl).f64()),
+    //     );
+    //     let size_x = px_size * center_geo.lat::<Radians>().cos() * scalar!(self.width);
+    //     let size_z = px_size * scalar!(self.height);
+    //     let scale = Vector3::new(size_x.f64(), 1.0, size_z.f64());
+    //     let field = HeightField::new(heights, scale);
+    //
+    //     // Points are projected "up" from our basis, so it's important that we pick the tangent
+    //     // at the surface, rather than a point at the edge, given the curvature.
+    //     let dir = Bearing::north().dvec3_at_geo(PitchCline::level(), center_geo.geode());
+    //
+    //     let center = center_geo.pt3::<Meters>().na_dvec3();
+    //     let up = center.normalize();
+    //     let (axis, angle) = UnitQuaternion::face_towards(&dir.into(), &up)
+    //         .axis_angle()
+    //         .unwrap();
+    //     let iframe = Isometry3::new(center, angle * axis.into_inner());
+    //     (field, iframe)
+    // }
 }
 
 #[derive(Debug)]

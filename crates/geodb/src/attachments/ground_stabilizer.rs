@@ -14,14 +14,12 @@
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 
 use absolute_unit::{Length, Meters};
-use bevy_ecs::prelude::*;
-use nitrous::{inject_nitrous_component, NitrousComponent};
+use bevy::prelude::*;
 
 /// Similar to a foundation, but for things that move. These will keep a relative height to
 /// the ground if the ground moves in a way that will interact with an attached CollisionImpostor.
 /// Unlike foundation, this component expects the entity to move.
-#[derive(NitrousComponent, Default)]
-#[component(name = "ground_stabilizer")]
+#[derive(Component, Default)]
 pub struct GroundStabilizer {
     // Store the prior ground height so that we can adjust by the correct amount on loads.
     // No, that doesn't work. We'll have moved in the prior frame. Unless we want to do
@@ -29,7 +27,6 @@ pub struct GroundStabilizer {
     current_height: Length<Meters>,
 }
 
-#[inject_nitrous_component]
 impl GroundStabilizer {
     pub fn current_height(&self) -> Length<Meters> {
         self.current_height

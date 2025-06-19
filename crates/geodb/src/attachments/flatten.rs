@@ -14,14 +14,12 @@
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{GeoDb, MapKind, MapName};
 use absolute_unit::prelude::*;
-use bevy_ecs::prelude::*;
+use bevy::prelude::*;
 use geodesy::GeodeBB;
-use nitrous::{inject_nitrous_component, NitrousComponent};
 use std::collections::HashSet;
 
 /// Attach a flattener to an entity to flatten a patch of ground.
-#[derive(NitrousComponent)]
-#[component(name = "flatten")]
+#[derive(Component)]
 pub struct Flatten {
     // Pre-compute the intersecting maps so that we don't have to do an expensive `sample` operation
     // just to find out that a newly loaded map isn't even in the same hemisphere.
@@ -36,7 +34,6 @@ pub struct Flatten {
     bounds: GeodeBB,
 }
 
-#[inject_nitrous_component]
 impl Flatten {
     pub fn new(bounds: &GeodeBB) -> Self {
         Self {

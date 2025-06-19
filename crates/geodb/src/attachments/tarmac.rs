@@ -13,17 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use absolute_unit::prelude::*;
-use bevy_ecs::prelude::*;
-use nitrous::{inject_nitrous_component, NitrousComponent};
+use bevy::prelude::*;
 
 // A building that can be attached to a Tarmac
 // FIXME: this functionality should be integrated with Foundation somehow to make matching easier
-#[derive(NitrousComponent)]
+#[derive(Component)]
 pub struct TarmacBuilding {
     offset_to_ground: Length<Meters>,
 }
 
-#[inject_nitrous_component]
 impl TarmacBuilding {
     pub fn new(offset_to_ground: Length<Meters>) -> Self {
         Self { offset_to_ground }
@@ -39,14 +37,13 @@ impl TarmacBuilding {
 // on it in rectilinear coordinates rather than geodetic, as geodetic
 // inaccuracy is significant at the lengths involved, at high
 // latitudes.
-#[derive(NitrousComponent)]
-#[component(name = "tarmac", storage = SparseSet)]
+#[derive(Component)]
+#[component(storage = "SparseSet")]
 pub struct Tarmac {
     offset_to_ground: Length<Meters>,
     buildings: Vec<Entity>,
 }
 
-#[inject_nitrous_component]
 impl Tarmac {
     pub fn new(offset_to_ground: Length<Meters>, buildings: &[Entity]) -> Self {
         Self {

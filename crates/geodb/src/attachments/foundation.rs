@@ -14,17 +14,15 @@
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{levels::OverviewLevel, GeoDb, MapKind, MapName};
 use absolute_unit::prelude::*;
-use bevy_ecs::prelude::*;
+use bevy::prelude::*;
 use geodesy::GeodeBB;
-use nitrous::{inject_nitrous_component, NitrousComponent};
 use runtime::RuntimeResource;
 use std::collections::HashSet;
 
 /// Attach a foundation to an entity to affix it to the ground.
 /// GeoDB uses these to make sure that any foundations inside a
 /// recently updated patch of heightmap stay on the ground.
-#[derive(NitrousComponent)]
-#[component(name = "foundation")]
+#[derive(Component)]
 pub struct Foundation {
     // Pre-compute the intersecting maps so that we don't have to do an expensive `sample` operation
     // just to find out that this load isn't even in the same hemisphere.
@@ -45,7 +43,6 @@ pub struct Foundation {
     last_refined_at_step: (u64, u64),
 }
 
-#[inject_nitrous_component]
 impl Foundation {
     pub fn new(offset_to_ground: Length<Meters>, bounds: &GeodeBB) -> Self {
         let mut bounds = bounds.to_owned();

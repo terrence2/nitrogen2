@@ -20,8 +20,10 @@ members = [
     "apps/n2",
     # Crates
     "crates/absolute_unit",
+    "crates/geodb",
     "crates/geodesy",
     "crates/geometry",
+    "crates/xz_wrapper",
 ]
 
 [workspace.dependencies]
@@ -47,16 +49,23 @@ hashbag = "0.1"
 hifitime = "4.1"
 itertools = "0.14"
 log = "0.4"
+md5 = "0.7"
+memmap2 = "0.9"
 nalgebra = "0.33"
 num-traits = "0.2"
 ordered-float = { version = "4.6", default-features = false }
+parking_lot = "0.12"
 packed_struct = { git = "https://github.com/terrence2/packed_struct", tag = "0.2.0" }
+progress-streams = "1.1"
 rand = "0.8.5" # as pulled in by glam 29.2
+rayon = "1.10"
 ron = "0.8"
 transform-gizmo-egui = "0.6"
 platform-dirs = "0.3"
 serde = "1.0"
+smallvec = "1.15"
 time = { version = "0.3", features = ["local-offset"] }
+zerocopy = "0.8"
 
 # with deep features
 #image = { version = "^ 0.25", default-features = false, features = [
@@ -170,6 +179,8 @@ bevy = { version = "0.16", default-features = false, features = [
 # Nitrogen crates
 absolute_unit = {  path = "crates/absolute_unit" }
 geodesy = { path = "crates/geodesy" }
+geometry = { path = "crates/geometry" }
+xz_wrapper = { path = "crates/xz_wrapper" }
 #dump-terrain-tables = { path = "apps/dump-terrain-tables" }
 #terrain = { path = "crates/terrain" }
 

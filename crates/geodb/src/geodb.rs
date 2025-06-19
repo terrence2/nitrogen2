@@ -21,7 +21,7 @@ use crate::{
 };
 use absolute_unit::prelude::*;
 use anyhow::{ensure, Result};
-use bevy_ecs::prelude::*;
+use bevy::prelude::*;
 use geodesy::{Geode, GeodeBB, GeodeticBB};
 use nitrous::{inject_nitrous_resource, method, NitrousResource};
 use phase::{CollisionImpostor, Frame};
@@ -110,7 +110,7 @@ pub enum GeoDbStep {
     UpdateTarmacHeight,
 }
 
-#[derive(Debug, NitrousResource)]
+#[derive(Debug, Resource)]
 pub struct GeoDb {
     lru: Lru,
     heights: GeoTiff,
@@ -145,7 +145,6 @@ impl Extension for GeoDb {
     }
 }
 
-#[inject_nitrous_resource]
 impl GeoDb {
     pub fn new(
         cache_dir: Option<&Path>,
@@ -382,6 +381,7 @@ impl GeoDb {
     //     }
     // }
 
+    #[cfg(target_arch = "wasm32")]
     fn sys_check_downloads(
         mut geodb: ResMut<GeoDb>,
         rt: Res<RuntimeResource>,
@@ -394,6 +394,7 @@ impl GeoDb {
         Ok(())
     }
 
+    #[cfg(target_arch = "wasm32")]
     fn check_downloads(
         &mut self,
         rt: &RuntimeResource,
@@ -442,6 +443,7 @@ impl GeoDb {
         notifications
     }
 
+    #[cfg(target_arch = "wasm32")]
     fn check_flatten_heights(
         &mut self,
         notifications: &[MapName],
@@ -555,6 +557,7 @@ impl GeoDb {
         Ok(())
     }
 
+    #[cfg(target_arch = "wasm32")]
     fn check_foundation_heights(
         &mut self,
         notifications: &[MapName],
@@ -603,6 +606,7 @@ impl GeoDb {
             });
     }
 
+    #[cfg(target_arch = "wasm32")]
     fn capture_current_stabilizer_heights(
         &mut self,
         stabs: &mut Query<
@@ -633,6 +637,7 @@ impl GeoDb {
     //   We're running this system before things needing a height. Movement between prior run and
     //   now doesn't really matter: the other system will have responded to collision or whatever.
     //   Moving the frame around subsequently will not change the situation.
+    #[cfg(target_arch = "wasm32")]
     fn check_stabilizer_heights(
         &mut self,
         notifications: &[MapName],
@@ -700,17 +705,14 @@ impl GeoDb {
         Ok(())
     }
 
-    #[method]
     pub fn memory_cache_size(&self) -> i64 {
         self.lru.memory_cache_size() as i64
     }
 
-    #[method]
     pub fn describe_heights(&self) -> String {
         self.heights.describe()
     }
 
-    #[method]
     pub fn describe_colors(&self) -> String {
         self.colors.describe()
     }
