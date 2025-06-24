@@ -12,10 +12,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-use crate::{
-    earth_radius,
-    Geode
-};
+use crate::{Geode, earth_radius};
 use absolute_unit::prelude::*;
 // use anyhow::{ensure, Error, Result};
 use approx::{AbsDiffEq, RelativeEq};

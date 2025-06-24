@@ -12,11 +12,11 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-use crate::{levels::OverviewLevel, GeoDb, MapKind, MapName};
+use crate::{GeoDb, MapKind, MapName, levels::OverviewLevel};
 use absolute_unit::prelude::*;
 use bevy::prelude::*;
 use geodesy::GeodeBB;
-use runtime::RuntimeResource;
+// use runtime::RuntimeResource;
 use std::collections::HashSet;
 
 /// Attach a foundation to an entity to affix it to the ground.
@@ -43,6 +43,7 @@ pub struct Foundation {
     last_refined_at_step: (u64, u64),
 }
 
+/*
 impl Foundation {
     pub fn new(offset_to_ground: Length<Meters>, bounds: &GeodeBB) -> Self {
         let mut bounds = bounds.to_owned();
@@ -96,3 +97,4 @@ impl Foundation {
         self.intersecting_maps.as_ref().unwrap().contains(name)
     }
 }
+*/

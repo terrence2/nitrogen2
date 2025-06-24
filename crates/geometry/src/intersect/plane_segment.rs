@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{Plane, Segment};
-use absolute_unit::{scalar, Length, LengthUnit, Pt3};
+use absolute_unit::{Length, LengthUnit, Pt3, scalar};
 use approx::relative_eq;
 use glam::DVec3;
 
@@ -264,7 +264,7 @@ pub fn intersect_segment_plane<Unit: LengthUnit>(
 #[cfg(test)]
 mod test {
     use super::*;
-    use absolute_unit::{meters, Meters};
+    use absolute_unit::{Meters, meters};
 
     fn segment((ax, ay, az): (f64, f64, f64), (bx, by, bz): (f64, f64, f64)) -> Segment<Meters> {
         Segment::new(

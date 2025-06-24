@@ -18,7 +18,7 @@ clap.workspace = true
 crossbeam.workspace = true
 glam.workspace = true
 itertools.workspace = true
-log.workspace = true
+#log.workspace = true
 md5.workspace = true
 parking_lot.workspace = true
 progress-streams.workspace = true
@@ -34,7 +34,7 @@ geometry.workspace = true
 #nitrous.workspace = true
 packed_struct.workspace = true
 #phase.workspace = true
-#runtime.workspace = true
+runtime.workspace = true
 xz_wrapper.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

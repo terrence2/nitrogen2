@@ -12,7 +12,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-use crate::{algorithm::bisect_edge_verts, Face, Primitive, RenderPrimitive, Vertex};
+use crate::{Face, Primitive, RenderPrimitive, Vertex, algorithm::bisect_edge_verts};
 use absolute_unit::prelude::*;
 use glam::DVec3;
 use std::fmt::Debug;

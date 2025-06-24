@@ -12,7 +12,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use progress_streams::{ProgressReader, ProgressWriter};
 use std::{
     fs::File,

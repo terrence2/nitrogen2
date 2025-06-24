@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-use crate::{meters, Length, LengthUnit, Meters, Quantity, Scalar, V3};
-use approx::{abs_diff_eq, relative_eq, AbsDiffEq, RelativeEq};
+use crate::{Length, LengthUnit, Meters, Quantity, Scalar, V3, meters};
+use approx::{AbsDiffEq, RelativeEq, abs_diff_eq, relative_eq};
 use glam::{DMat4, DQuat, DVec3, DVec4};
 use nalgebra as na;
 use std::{
@@ -352,7 +352,7 @@ where
     type Output = Pt3<Unit>;
 
     fn div(self, rhs: Scalar) -> Self::Output {
-        Pt3::new_dvec3(self.vec / rhs.0 .0)
+        Pt3::new_dvec3(self.vec / rhs.0.0)
     }
 }
 

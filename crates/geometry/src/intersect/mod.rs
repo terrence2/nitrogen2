@@ -25,25 +25,25 @@ mod ray_sphere;
 mod ray_triangle;
 
 pub use aabb_ray::{
-    intersect_aabb_ray, intersect_aabb_ray_into, intersect_ray_aabb, intersect_ray_aabb_into,
-    AabbRayIntersect,
+    AabbRayIntersect, intersect_aabb_ray, intersect_aabb_ray_into, intersect_ray_aabb,
+    intersect_ray_aabb_into,
 };
 pub use capsule_plane::{
-    intersect_capsule_plane, intersect_capsule_plane_into, intersect_plane_capsule,
-    intersect_plane_capsule_into, CapsulePlaneIntersect,
+    CapsulePlaneIntersect, intersect_capsule_plane, intersect_capsule_plane_into,
+    intersect_plane_capsule, intersect_plane_capsule_into,
 };
 pub use circle_plane::{
-    intersect_circle_plane, intersect_circle_plane_into, intersect_plane_circle,
-    intersect_plane_circle_into, CirclePlaneIntersection,
+    CirclePlaneIntersection, intersect_circle_plane, intersect_circle_plane_into,
+    intersect_plane_circle, intersect_plane_circle_into,
 };
 pub use plane_segment::{
+    PlaneSegmentIntersect,
     intersect_plane_segment,
     // segment_approach_plane, segment_vs_plane, SegmentPlaneApproachKind, SegmentPlaneIntersect,
     intersect_plane_segment_into,
     intersect_segment_plane,
     intersect_segment_plane_into,
-    PlaneSegmentIntersect,
 };
-pub use plane_sphere::{sphere_vs_plane, PlaneSide, SpherePlaneIntersection};
+pub use plane_sphere::{PlaneSide, SpherePlaneIntersection, sphere_vs_plane};
 pub use ray_sphere::sphere_vs_ray;
 pub use ray_triangle::ray_vs_triangle;

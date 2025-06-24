@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{
-    intersect::{intersect_plane_segment, PlaneSegmentIntersect},
     Capsule, Plane,
+    intersect::{PlaneSegmentIntersect, intersect_plane_segment},
 };
 use absolute_unit::prelude::*;
 use glam::DVec3;

@@ -13,9 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{
+    DynamicUnits, LengthUnit, Meters, Seconds, Time, TimeUnit, Velocity,
     impl_value_type_conversions, supports_absdiffeq, supports_cancellation, supports_quantity_ops,
-    supports_scalar_ops, supports_shift_ops, supports_value_type_conversion, DynamicUnits,
-    LengthUnit, Meters, Seconds, Time, TimeUnit, Velocity,
+    supports_scalar_ops, supports_shift_ops, supports_value_type_conversion,
 };
 use ordered_float::OrderedFloat;
 use std::{fmt, fmt::Debug, marker::PhantomData, ops::Mul};

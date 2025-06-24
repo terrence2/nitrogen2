@@ -15,11 +15,12 @@
 mod file_reader;
 mod http_reader;
 
-use anyhow::{Context, Result};
+use anyhow::Context;
+use bevy::{ecs::error::Result, log::trace};
 use file_reader::TiffFileReader;
 use http_reader::TiffHttpReader;
-use log::trace;
 use memmap2::Mmap;
+use runtime::reexport::BevyError;
 use std::{
     fs,
     fs::{File, OpenOptions},
@@ -137,10 +138,7 @@ impl TiffAccess {
 
         trace!(
             "TiffReader::ensure_cached: {}+{} from {} into {:?}",
-            start,
-            nbytes,
-            self.url,
-            cache_path
+            start, nbytes, self.url, cache_path
         );
         match &self.source {
             TiffSource::File(src) => {
@@ -169,6 +167,7 @@ impl TiffAccess {
         let cache_fp = self.ensure_cached(start, nbytes, read_notify, write_notify)?;
         unsafe { Mmap::map(&cache_fp) }
             .with_context(|| format!("mapping cache for {start:016X}<-{nbytes:08X}"))
+            .map_err(BevyError::from)
             .map(Memory::Mapping)
     }
 
@@ -185,7 +184,9 @@ impl TiffAccess {
     {
         let mut cache_fp = self
             .ensure_cached(start, nbytes, read_notify, write_notify)
-            .with_context(|| format!("ensure cached {start:016X}<-{nbytes:08X}"))?;
+            .map_err(|err| anyhow::anyhow!(err.to_string()))
+            .with_context(|| format!("mapping {} into memory", self.url))
+            .map_err(BevyError::from)?;
         let mut buf = Vec::new();
         cache_fp
             .read_to_end(&mut buf)

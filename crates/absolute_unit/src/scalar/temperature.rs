@@ -12,7 +12,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-use crate::{kelvin, supports_value_type_conversion, Quantity, Scalar, Unit};
+use crate::{Quantity, Scalar, Unit, kelvin, supports_value_type_conversion};
 use approx::AbsDiffEq;
 use ordered_float::OrderedFloat;
 use std::{

@@ -12,26 +12,15 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-// mod attachments;
-mod cache_access;
-mod geodb;
-pub(crate) mod geotiff;
-mod levels;
-pub(crate) mod lru;
-mod plugin;
-mod tiff;
 
-pub const MAP_SIZE: u32 = 512;
+#[cfg(not(target_arch = "wasm32"))]
+mod desktop;
 
-pub use crate::{
-    // attachments::{
-    //     flatten::Flatten,
-    //     foundation::Foundation,
-    //     ground_stabilizer::GroundStabilizer,
-    //     tarmac::{Tarmac, TarmacBuilding},
-    // },
-    geodb::{GeoDb, MapKind, MapName},
-    levels::{OverviewLevel, TileSubdivisionLevel},
-    lru::MapState,
-    plugin::{GeoDbPlugin, GeoDbStep},
-};
+#[cfg(target_arch = "wasm32")]
+mod web;
+
+#[cfg(not(target_arch = "wasm32"))]
+pub use desktop::{StdPaths, StdPathsPlugin};
+
+#[cfg(target_arch = "wasm32")]
+pub use web::{StdPaths, StdPathsOpts};

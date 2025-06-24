@@ -13,7 +13,7 @@ use std::mem;
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use packed_struct::packed_struct;
 use zerocopy::IntoBytes;
 

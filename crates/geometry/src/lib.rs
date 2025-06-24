@@ -28,7 +28,7 @@ mod sphere;
 mod trimesh;
 
 pub use crate::{
-    aabb3::Aabb3, aabb_n::Aabb, arrow::Arrow, capsule::Capsule, circle::Circle, cylinder::Cylinder,
+    aabb_n::Aabb, aabb3::Aabb3, arrow::Arrow, capsule::Capsule, circle::Circle, cylinder::Cylinder,
     plane::Plane, ray::Ray, segment::Segment, sphere::Sphere, trimesh::TriMesh,
 };
 

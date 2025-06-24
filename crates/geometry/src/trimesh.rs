@@ -12,7 +12,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-use crate::{algorithm::compute_normal, Face, Primitive, RenderPrimitive, Vertex};
+use crate::{Face, Primitive, RenderPrimitive, Vertex, algorithm::compute_normal};
 use absolute_unit::{LengthUnit, Meters, Pt3};
 use glam::DQuat;
 // use rapier3d_f64::parry::{
@@ -68,15 +68,15 @@ impl<Unit: LengthUnit> TriMesh<Unit> {
     // pub fn from_ball(ball: &Ball, detail: u32) -> Self {
     //     Self::from_parry(ball.to_trimesh(detail, detail))
     // }
-    // 
+    //
     // pub fn from_cuboid(cuboid: &Cuboid) -> Self {
     //     Self::from_parry(cuboid.to_trimesh())
     // }
-    // 
+    //
     // pub fn from_heightfield(height_field: &HeightField) -> Self {
     //     Self::from_parry(height_field.to_trimesh())
     // }
-    // 
+    //
     // pub fn from_parry((verts, tris): (Vec<Point3<f64>>, Vec<[u32; 3]>)) -> Self {
     //     let points: Vec<Pt3<Unit>> = verts
     //         .iter()

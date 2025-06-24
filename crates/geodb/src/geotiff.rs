@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{
+    MAP_SIZE,
     cache_access::{Memory, TiffAccess},
     geodb::{MapKind, MapName},
     levels::OverviewLevel,
@@ -21,23 +22,25 @@ use crate::{
         GeoTiffKeyId, GeoTiffModelPixelScale, GeoTiffTiePoint, IFDTag, OffsetOrInlineData,
         TiffTagId, TiffType,
     },
-    MAP_SIZE,
 };
 use absolute_unit::prelude::*;
-use anyhow::{anyhow, ensure, Context, Result};
+use anyhow::Context;
+use bevy::prelude::*;
+// use anyhow::{Context, Result, anyhow, ensure};
 use approx::relative_eq;
 use crossbeam::channel::{self, Receiver, Sender};
 use geodesy::{Bearing, Geode, GeodeBB, Geodetic, PitchCline};
 use geometry::TriMesh;
 use glam::DVec2;
 use itertools::Itertools;
-use log::{error, trace};
+use packed_struct::packed_struct;
 use parking_lot::{Mutex, RwLock};
 // use rapier3d_f64::parry::{
 //     na::{DMatrix, Isometry3, UnitQuaternion, Vector3},
 //     shape::HeightField,
 // };
 use rayon::Scope;
+use runtime::ensure;
 use smallvec::SmallVec;
 use std::{
     collections::HashMap,
@@ -45,8 +48,8 @@ use std::{
     ops::Index,
     path::Path,
     sync::{
-        atomic::{AtomicUsize, Ordering},
         Arc,
+        atomic::{AtomicUsize, Ordering},
     },
 };
 
@@ -68,8 +71,8 @@ struct GeoTiffOverviewInfo {
 // Tiles are row major, top to bottom, whereas the coordinate space (WGS84)
 // is bottom to top. Usage of tiles should take into account that areas are
 // top to bottom.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
-#[repr(packed)]
+#[packed_struct]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct MapRef {
     stride: u16,
     offset: u32,
@@ -88,14 +91,6 @@ impl MapRef {
             stride: stride as u16,
             offset: lat * stride + lon,
         }
-    }
-
-    pub fn offset(&self) -> u32 {
-        self.offset
-    }
-
-    pub fn stride(&self) -> u16 {
-        self.stride
     }
 
     pub fn index(&self) -> usize {
@@ -1009,6 +1004,7 @@ impl GeoTiff {
     ) -> Result<(Vec<GeoTiffOverviewInfo>, Angle<Degrees>, Geode)> {
         let header_data = reader
             .get(0, 8192, |_| {}, |_| {})
+            .map_err(|err| anyhow::anyhow!(err.to_string()))
             .with_context(|| format!("getting header for {cog_url}"))?;
         let header = BigTiffFileHeader::overlay(&header_data[0..BigTiffFileHeader::size_of()])?;
         header.validate_support()?;
@@ -1047,29 +1043,29 @@ impl GeoTiff {
 
         // Pull out and assert present all required tags
         let width_tag = IFDTag::find(TiffTagId::ImageWidth, &tags)
-            .ok_or_else(|| anyhow!("cog width tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog width tag missing"))?;
         let height_tag = IFDTag::find(TiffTagId::ImageLength, &tags)
-            .ok_or_else(|| anyhow!("cog height tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog height tag missing"))?;
         let bps_tag = IFDTag::find(TiffTagId::BitsPerSample, &tags)
-            .ok_or_else(|| anyhow!("cog bits per sample tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog bits per sample tag missing"))?;
         let compression_tag = IFDTag::find(TiffTagId::Compression, &tags)
-            .ok_or_else(|| anyhow!("cog compression tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog compression tag missing"))?;
         let photometrics_tag = IFDTag::find(TiffTagId::PhotometricInterpretation, &tags)
-            .ok_or_else(|| anyhow!("cog photometrics tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog photometrics tag missing"))?;
         let pixsize_tag = IFDTag::find(TiffTagId::SamplesPerPixel, &tags)
-            .ok_or_else(|| anyhow!("cog photometrics tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog photometrics tag missing"))?;
         let sampfmt_tag = IFDTag::find(TiffTagId::SampleFormat, &tags)
-            .ok_or_else(|| anyhow!("cog sample format tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog sample format tag missing"))?;
         let planar_tag = IFDTag::find(TiffTagId::PlanarConfiguration, &tags)
-            .ok_or_else(|| anyhow!("cog planar config tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog planar config tag missing"))?;
         let tile_width_tag = IFDTag::find(TiffTagId::TileWidth, &tags)
-            .ok_or_else(|| anyhow!("cog tile width tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog tile width tag missing"))?;
         let tile_height_tag = IFDTag::find(TiffTagId::TileLength, &tags)
-            .ok_or_else(|| anyhow!("cog tile height tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog tile height tag missing"))?;
         let tile_offsets_tag = IFDTag::find(TiffTagId::TileOffsets, &tags)
-            .ok_or_else(|| anyhow!("cog tile offsets tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog tile offsets tag missing"))?;
         let tile_nbytes_tag = IFDTag::find(TiffTagId::TileByteCounts, &tags)
-            .ok_or_else(|| anyhow!("cog tile byte counts tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog tile byte counts tag missing"))?;
 
         // Make assertions about things that should always be true
         ensure!(
@@ -1161,11 +1157,11 @@ impl GeoTiff {
 
         // Only defined on the top layer
         let scale_tag = IFDTag::find(TiffTagId::ModelPixelScale, &tags)
-            .ok_or_else(|| anyhow!("cog model pixel scale tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog model pixel scale tag missing"))?;
         let tie_point_tag = IFDTag::find(TiffTagId::ModelTiePoint, &tags)
-            .ok_or_else(|| anyhow!("cog model tie point tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog model tie point tag missing"))?;
         let geo_dir_tag = IFDTag::find(TiffTagId::GeoKeyDirectoryTag, &tags)
-            .ok_or_else(|| anyhow!("cog geo key director tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog geo key director tag missing"))?;
 
         let scale_offset = usize::try_from(scale_tag.inline_data)?;
         let scale = GeoTiffModelPixelScale::overlay(
@@ -1240,7 +1236,7 @@ impl GeoTiff {
         let (next_ifd, tags) = Self::bg_parse_ifd_common(offset, data, kind, layers)?;
 
         let subfile_type_tag = IFDTag::find(TiffTagId::NewSubfileType, &tags)
-            .ok_or_else(|| anyhow!("cog subfile type tag missing"))?;
+            .ok_or_else(|| BevyError::from("cog subfile type tag missing"))?;
         ensure!(subfile_type_tag.inline_data == 1, "expected subfile type 1");
 
         Ok(next_ifd)

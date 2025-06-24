@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{Face, Primitive, RenderPrimitive, Vertex};
-use absolute_unit::{scalar, Length, LengthUnit, Pt3, Volume};
+use absolute_unit::{Length, LengthUnit, Pt3, Volume, scalar};
 use glam::{DQuat, DVec3};
 use std::{f64, f64::consts::PI};
 

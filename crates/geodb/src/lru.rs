@@ -13,17 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{
+    MAP_SIZE, MapKind, MapName,
     geotiff::{GeoTiffIndices, SampleInfo},
-    MapKind, MapName, MAP_SIZE,
 };
 use absolute_unit::prelude::*;
-use anyhow::Result;
+use bevy::{
+    ecs::error::{ErrorContext, error},
+    log::trace,
+    prelude::*,
+};
 use crossbeam::channel::{Receiver, Sender};
-use log::{error, trace};
+// use log::{error, trace};
 use rayon::{ThreadPool, ThreadPoolBuilder};
-use runtime::{report_err, RuntimeResource};
+// use runtime::{RuntimeResource, report_err};
+use bevy::ecs::component::Tick;
 use smallvec::SmallVec;
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use zerocopy::Ref;
 
 // Internal tracking per map name.
@@ -32,14 +37,14 @@ pub enum MapState {
     Loading,
     Ready {
         data: Arc<Vec<u8>>,
-        last_use: (u64, u64),
+        last_use: Duration,
     },
     Empty,
 }
 
 // Return a map load operation to the foreground
 struct MapLoadResult {
-    rt_state: (u64, u64),
+    as_of: Duration,
     map: MapName,
     status: Result<Vec<u8>>,
 }
@@ -146,37 +151,37 @@ impl Lru {
     pub(crate) fn make_available(
         &mut self,
         maps: &[MapName],
-        rt: &RuntimeResource,
+        as_of: Duration,
     ) -> SmallVec<[(MapName, MapState); 9]> {
         maps.iter()
-            .map(|name| (*name, self.make_map_available(name, rt)))
+            .map(|name| (*name, self.make_map_available(name, as_of)))
             .collect::<SmallVec<_>>()
     }
 
-    pub(crate) fn make_map_available(&mut self, name: &MapName, rt: &RuntimeResource) -> MapState {
+    pub(crate) fn make_map_available(&mut self, name: &MapName, as_of: Duration) -> MapState {
         let next = match self.tiles.get(name) {
             None => {
-                self.request_map(name, rt);
+                self.request_map(name, as_of);
                 MapState::Loading
             }
             Some(MapState::Loading) => MapState::Loading,
             Some(MapState::Empty) => MapState::Empty,
             Some(MapState::Ready { data, .. }) => MapState::Ready {
                 data: data.to_owned(),
-                last_use: rt.state(),
+                last_use: as_of,
             },
         };
         self.tiles.insert(*name, next.clone());
         next
     }
 
-    pub(crate) fn request_map(&self, name: &MapName, rt: &RuntimeResource) {
-        trace!("requesting map {name} at {:?}", rt.state());
+    pub(crate) fn request_map(&self, name: &MapName, as_of: Duration) {
+        trace!("requesting map {name} at {:?}", as_of);
         debug_assert!(!self.tiles.contains_key(name));
 
         let name = *name;
         let fin_send = self.fin_send.clone();
-        let rt_state = rt.state();
+        let rt_state = as_of;
         if let Some((index, reader)) = self.indices.get(&name.tiff_index_index()) {
             let index = index.to_owned();
             let reader = reader.to_owned();
@@ -192,7 +197,6 @@ impl Lru {
                             match xz_wrapper::decompress(&data) {
                                 Ok(data) => data,
                                 Err(e) => {
-                                    error!("failed to decompress: {e:#?}");
                                     panic!("failed to decompress: {e}");
                                 }
                             }
@@ -214,7 +218,7 @@ impl Lru {
                         }
                     });
                 let result = MapLoadResult {
-                    rt_state,
+                    as_of: rt_state,
                     map: name,
                     status,
                 };
@@ -228,7 +232,13 @@ impl Lru {
             let data = match rv.status {
                 Ok(v) => v,
                 Err(err) => {
-                    report_err(err);
+                    error(
+                        err,
+                        ErrorContext::System {
+                            name: "realize_loads".into(),
+                            last_run: Tick::default(),
+                        },
+                    );
                     continue;
                 }
             };
@@ -237,7 +247,7 @@ impl Lru {
             let value = if !data.is_empty() {
                 MapState::Ready {
                     data: Arc::new(data),
-                    last_use: rv.rt_state,
+                    last_use: rv.as_of,
                 }
             } else {
                 MapState::Empty

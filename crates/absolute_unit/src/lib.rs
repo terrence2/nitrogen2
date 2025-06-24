@@ -29,10 +29,10 @@ pub trait Quantity {
 
 pub mod prelude {
     pub use crate::{
-        arcminutes, arcseconds, astronomical_units, degrees, degrees_per_second,
-        degrees_per_second2, feet, feet2, feet_per_second, feet_per_second2, kelvin, kilograms,
+        Quantity, arcminutes, arcseconds, astronomical_units, degrees, degrees_per_second,
+        degrees_per_second2, feet, feet_per_second, feet_per_second2, feet2, kelvin, kilograms,
         kilograms_meter2, kilograms_per_meter3, kilograms_per_second, kilometers, knots, meters,
-        meters2, meters_per_second, meters_per_second2, miles, miles_per_hour, nautical_miles,
+        meters_per_second, meters_per_second2, meters2, miles, miles_per_hour, nautical_miles,
         nautical_miles_per_hour, newton_meters, newtons, pascals, pdl, pounds_force, pounds_mass,
         pounds_mass_per_second, pounds_per_feet3, pounds_square_foot, radians, radians_per_second,
         radians_per_second2, scalar,
@@ -59,16 +59,15 @@ pub mod prelude {
         },
         seconds,
         unit::{
-            arcminutes::ArcMinutes, arcseconds::ArcSeconds, astronomical_units::AstronomicalUnits,
-            celsius::Celsius, degrees::Degrees, fahrenheit::Fahrenheit, feet::Feet, hours::Hours,
-            kelvin::Kelvin, kilograms::Kilograms, kilometers::Kilometers, meters::Meters,
-            miles::Miles, nautical_miles::NauticalMiles, newtons::Newtons, pascals::Pascals,
-            pounds_force::PoundsForce, pounds_mass::PoundsMass,
+            Unit, arcminutes::ArcMinutes, arcseconds::ArcSeconds,
+            astronomical_units::AstronomicalUnits, celsius::Celsius, degrees::Degrees,
+            fahrenheit::Fahrenheit, feet::Feet, hours::Hours, kelvin::Kelvin, kilograms::Kilograms,
+            kilometers::Kilometers, meters::Meters, miles::Miles, nautical_miles::NauticalMiles,
+            newtons::Newtons, pascals::Pascals, pounds_force::PoundsForce, pounds_mass::PoundsMass,
             pounds_square_foot::PoundsSquareFoot, radians::Radians, rankine::Rankine,
-            scalar::Scalar, seconds::Seconds, slugs::Slugs, Unit,
+            scalar::Scalar, seconds::Seconds, slugs::Slugs,
         },
         vector::{pt3::Pt3, v3::V3},
-        Quantity,
     };
 }
 pub use crate::prelude::*;

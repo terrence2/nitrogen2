@@ -1,0 +1,31 @@
+[package]
+name = "runtime"
+description = "A wrapper around BevyECS that enable it to be used as the memory for a scripting engine."
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+readme.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+bevy.workspace = true
+clap.workspace = true
+hifitime.workspace = true
+itertools.workspace = true
+#log.workspace = true
+#once_cell.workspace = true
+#parking_lot.workspace = true
+platform-dirs.workspace = true
+#pretty-type-name.workspace = true
+#structopt.workspace = true
+# Internal
+#absolute_unit.workspace = true
+#ansi.workspace = true
+#nitrous.workspace = true
+
+[dev-dependencies]
+#env_logger.workspace = true

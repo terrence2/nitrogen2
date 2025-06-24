@@ -61,7 +61,7 @@ pub use crate::{
     pitch_cline::PitchCline,
 };
 
-use absolute_unit::{Meters, Length};
+use absolute_unit::{Length, Meters};
 pub const fn earth_radius() -> Length<Meters> {
     Length::<Meters>::new(6_356_766f64)
 }

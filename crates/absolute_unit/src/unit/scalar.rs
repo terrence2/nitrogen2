@@ -12,7 +12,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-use crate::{radians, Angle, DynamicUnits, Quantity, Radians};
+use crate::{Angle, DynamicUnits, Quantity, Radians, radians};
 use approx::AbsDiffEq;
 use ordered_float::OrderedFloat;
 use std::fmt::Formatter;
@@ -159,7 +159,7 @@ impl AbsDiffEq for Scalar {
     }
 
     fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
-        self.0 .0.abs_diff_eq(&other.0 .0, epsilon)
+        self.0.0.abs_diff_eq(&other.0.0, epsilon)
     }
 }
 

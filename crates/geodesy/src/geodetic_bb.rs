@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{GeodeBB, Geodetic};
-use absolute_unit::{meters, radians, Angle, AngleUnit, Length, LengthUnit, Pt3};
+use absolute_unit::{Angle, AngleUnit, Length, LengthUnit, Pt3, meters, radians};
 use std::{f64::consts::PI, fmt::Debug, mem};
 
 /// A geodetically aligned bounding box, defined by low and high positions, mapically.

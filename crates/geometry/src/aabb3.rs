@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{Face, Primitive, RenderPrimitive, Sphere, Vertex};
-use absolute_unit::{scalar, Length, LengthUnit, Pt3, Volume};
+use absolute_unit::{Length, LengthUnit, Pt3, Volume, scalar};
 use glam::DVec3;
 // use rapier3d_f64::parry::{na::Isometry3, shape::Cuboid};
 use std::{cmp::PartialOrd, fmt::Debug};
@@ -247,7 +247,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use absolute_unit::{meters, Meters};
+    use absolute_unit::{Meters, meters};
 
     #[test]
     fn test_degenerate() {

@@ -13,21 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{
+    // Flatten, Foundation, GroundStabilizer, Tarmac, TarmacBuilding,
     geotiff::{GeoTiff, LoadState, MapRef, SampleGrid},
     levels::{OverviewLevel, TileSubdivisionLevel},
     lru::{Lru, MapState},
-    options::GeoDbOpts,
-    Flatten, Foundation, GroundStabilizer, Tarmac, TarmacBuilding,
 };
 use absolute_unit::prelude::*;
-use anyhow::{ensure, Result};
 use bevy::prelude::*;
 use geodesy::{Geode, GeodeBB, GeodeticBB};
-use nitrous::{inject_nitrous_resource, method, NitrousResource};
-use phase::{CollisionImpostor, Frame};
-use runtime::{report_errors, Extension, Runtime, RuntimeResource, StdPaths};
+use runtime::ensure;
+// use nitrous::{inject_nitrous_resource, method, NitrousResource};
+// use phase::{CollisionImpostor, Frame};
+// use runtime::{report_errors, Extension, Runtime, RuntimeResource, StdPaths};
 use smallvec::SmallVec;
-use std::{collections::HashSet, fmt, mem, path::Path};
+use std::{collections::HashSet, fmt, mem, path::Path, time::Duration};
 
 /// The GeoDB has 3 layers:
 ///   1) In-Memory uncompressed LRU cache
@@ -104,45 +103,11 @@ pub struct SelectedTarmacHeight {
     asl: Length<Meters>,
 }
 
-#[derive(SystemSet, Clone, Debug, Eq, PartialEq, Hash)]
-pub enum GeoDbStep {
-    CheckDownloads,
-    UpdateTarmacHeight,
-}
-
 #[derive(Debug, Resource)]
 pub struct GeoDb {
     lru: Lru,
     heights: GeoTiff,
     colors: GeoTiff,
-}
-
-impl Extension for GeoDb {
-    type Opts = GeoDbOpts;
-
-    fn init(runtime: &mut Runtime, opts: GeoDbOpts) -> Result<()> {
-        let height_cog_url = opts.tiles_height_url().to_string();
-        let color_cog_url = opts.tiles_color_url().to_string();
-        let tm = GeoDb::new(
-            runtime.resource::<StdPaths>().state_dir(),
-            &height_cog_url,
-            &color_cog_url,
-        )?;
-        runtime.inject_resource(tm)?;
-        runtime.add_sim_system(
-            Self::sys_check_downloads
-                .pipe(report_errors)
-                .in_set(GeoDbStep::CheckDownloads),
-        );
-        runtime.add_sim_system(
-            Self::sys_apply_tarmac_height
-                .pipe(report_errors)
-                .in_set(GeoDbStep::UpdateTarmacHeight)
-                .after(GeoDbStep::CheckDownloads),
-        );
-        runtime.register_event::<SelectedTarmacHeight>();
-        Ok(())
-    }
 }
 
 impl GeoDb {
@@ -183,7 +148,7 @@ impl GeoDb {
         bb: &GeodeBB,
         depth: TileSubdivisionLevel,
         kind: MapKind,
-        rt: &RuntimeResource,
+        as_of: Duration,
     ) -> SmallVec<[(MapName, MapState); 9]> {
         if !self.is_ready(kind) {
             return SmallVec::new();
@@ -191,7 +156,7 @@ impl GeoDb {
         let overview_level = depth.best_overview_level(kind);
         if overview_level.offset() < self.tiff(kind).num_layers() {
             let maps = self.tiff(kind)[overview_level].find_tiles_in_range(bb);
-            self.lru.make_available(&maps, rt)
+            self.lru.make_available(&maps, as_of)
         } else {
             SmallVec::new()
         }
@@ -202,7 +167,7 @@ impl GeoDb {
         bb: &GeodeBB,
         min_level: OverviewLevel,
         kind: MapKind,
-        rt: &RuntimeResource,
+        as_of: Duration,
     ) -> Result<()> {
         if !self.is_ready(kind) {
             return Ok(());
@@ -211,7 +176,7 @@ impl GeoDb {
         for i in min_level.ascending() {
             let level = OverviewLevel::new(i as usize);
             let maps = self.tiff(kind)[level].find_tiles_in_range(bb);
-            self.lru.make_available(&maps, rt);
+            self.lru.make_available(&maps, as_of);
         }
         Ok(())
     }
@@ -381,22 +346,25 @@ impl GeoDb {
     //     }
     // }
 
-    #[cfg(target_arch = "wasm32")]
-    fn sys_check_downloads(
+    pub(crate) fn sys_check_downloads(
         mut geodb: ResMut<GeoDb>,
+        /*
+        time: Res<BevyTime>,
         rt: Res<RuntimeResource>,
         flattens: Query<(Entity, &mut Flatten, Option<&Tarmac>)>,
         foundations: Query<(&mut Foundation, &mut Frame), Without<GroundStabilizer>>,
         stabs: Query<(&mut GroundStabilizer, &CollisionImpostor, &mut Frame), Without<Foundation>>,
         selected_tarmac_height: EventWriter<SelectedTarmacHeight>,
+         */
     ) -> Result<()> {
-        geodb.check_downloads(&rt, flattens, foundations, stabs, selected_tarmac_height)?;
+        geodb.check_downloads(/*time, flattens, foundations, stabs, selected_tarmac_height*/)?;
         Ok(())
     }
 
-    #[cfg(target_arch = "wasm32")]
     fn check_downloads(
         &mut self,
+        /*
+        time: Res<BevyTime>,
         rt: &RuntimeResource,
         flattens: Query<(Entity, &mut Flatten, Option<&Tarmac>)>,
         foundations: Query<(&mut Foundation, &mut Frame), Without<GroundStabilizer>>,
@@ -405,42 +373,46 @@ impl GeoDb {
             Without<Foundation>,
         >,
         selected_tarmac_height: EventWriter<SelectedTarmacHeight>,
+         */
     ) -> Result<()> {
+        /*
         // Grab the current heights of all stabs so we can follow loads accurately
         self.capture_current_stabilizer_heights(&mut stabs);
+         */
 
         // Load new height tiles and grab the list of what changed.
-        let notifications = self.check_downloads_for(MapKind::Heights);
+        let notifications = self.check_downloads_for(MapKind::Heights)?;
 
+        /*
         if !notifications.is_empty() {
             // Apply the changes to each of our core types; flatten first.
             self.check_flatten_heights(&notifications, rt, flattens, selected_tarmac_height)?;
             self.check_foundation_heights(&notifications, rt, foundations);
             self.check_stabilizer_heights(&notifications, stabs);
         }
+         */
 
         // Load color changes; no need to fix up anything.
-        self.check_downloads_for(MapKind::Colors);
+        self.check_downloads_for(MapKind::Colors)?;
 
         Ok(())
     }
 
-    fn check_downloads_for(&mut self, kind: MapKind) -> Vec<MapName> {
+    fn check_downloads_for(&mut self, kind: MapKind) -> Result<Vec<MapName>> {
         // Note: early return before we are in steady state execution.
         let mut notifications = Vec::new();
         match self.tiff_mut(kind).check_downloads() {
-            LoadState::Starting => return notifications,
-            LoadState::Preparing(_, _) => return notifications,
+            LoadState::Starting => {}
+            LoadState::Preparing(_, _) => {}
             LoadState::Finished => {
                 let indices = self.tiff(kind).indices();
                 self.lru.add_indices(indices);
-                return notifications;
             }
             LoadState::Complete => {
                 self.lru.realize_loads(&mut notifications);
             }
         }
-        notifications
+        Ok(notifications)
     }
 
     #[cfg(target_arch = "wasm32")]
@@ -685,6 +657,7 @@ impl GeoDb {
             });
     }
 
+    #[cfg(target_arch = "wasm32")]
     fn sys_apply_tarmac_height(
         mut tarmacs: Query<(&Tarmac, &mut Frame)>,
         mut buildings: Query<(&TarmacBuilding, &mut Frame), Without<Tarmac>>,
@@ -736,55 +709,55 @@ impl GeoDb {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::GeoDbPlugin;
     use absolute_unit::degrees;
+    use bevy::time::{Time as BevyTime, TimePlugin};
     use geodesy::Geode;
-    use runtime::StdPathsOpts;
+    use runtime::{StdPathsPlugin};
 
     #[test]
     fn it_works() -> Result<()> {
         assert_eq!(mem::size_of::<MapName>(), 8);
-
-        let mut runtime = Runtime::new()?;
-        runtime
-            .load_extension_with::<StdPaths>(StdPathsOpts::new("nitrogen"))?
-            .load_extension_with::<GeoDb>(GeoDbOpts::default())?;
-        while !runtime.resource::<GeoDb>().is_ready(MapKind::Heights) {
-            runtime.run_sim_once();
-            runtime.run_frame_once();
-        }
-        let a = Geode::new(degrees!(34.415_513_9), degrees!(-119.731_024_1));
-        let b = Geode::new(degrees!(34.423_609_5), degrees!(-119.724_560_7));
-        for depth in (0..=10).rev() {
-            runtime.resource_scope(|heap, mut geodb: Mut<GeoDb>| {
-                geodb.map_region_to_tiles(
-                    &GeodeBB::from_bounds(a, b),
-                    TileSubdivisionLevel::new(depth),
-                    MapKind::Heights,
-                    heap.resource::<RuntimeResource>(),
-                );
-            });
-        }
-        let a = Geode::new(degrees!(34.415_513_9), degrees!(-119.731_024_1));
-        let b = Geode::new(degrees!(35.415_513_9), degrees!(-118.731_024_1));
-        for depth in (0..=10).rev() {
-            runtime.resource_scope(|heap, mut geodb: Mut<GeoDb>| {
-                geodb.map_region_to_tiles(
-                    &GeodeBB::from_bounds(a, b),
-                    TileSubdivisionLevel::new(depth),
-                    MapKind::Heights,
-                    heap.resource::<RuntimeResource>(),
-                );
-            });
-        }
+        let mut app = App::new();
+        app.add_plugins((
+            MinimalPlugins,
+            StdPathsPlugin::new("nitrogen2"),
+            GeoDbPlugin::default(),
+        ));
+        app.add_systems(
+            Update,
+            |mut geodb: ResMut<GeoDb>, time: Res<BevyTime>, mut app_exit: EventWriter<AppExit>| {
+                if geodb.is_ready(MapKind::Heights) {
+                    let a = Geode::new(degrees!(34.415_513_9), degrees!(-119.731_024_1));
+                    let b = Geode::new(degrees!(34.423_609_5), degrees!(-119.724_560_7));
+                    for depth in (0..=10).rev() {
+                        let tiles = geodb.map_region_to_tiles(
+                            &GeodeBB::from_bounds(a, b),
+                            TileSubdivisionLevel::new(depth),
+                            MapKind::Heights,
+                            time.elapsed(),
+                        );
+                        for (name, state) in tiles {
+                            assert_eq!(name.level(), OverviewLevel::new(10 - depth));
+                            if matches!(state, MapState::Ready {..}) {
+                                app_exit.write(AppExit::Success);
+                            }
+                        }
+                    }
+                }
+            },
+        );
+        app.run();
         Ok(())
     }
 
+    /*
     #[test]
     fn test_sampling() -> Result<()> {
         let mut runtime = Runtime::new()?;
         runtime
-            .load_extension_with::<StdPaths>(StdPathsOpts::new("nitrogen"))?
-            .load_extension_with::<GeoDb>(GeoDbOpts::default())?;
+            .load_extension_with::<StdPaths>(StdPathsPlugin::new("nitrogen"))?
+            .load_extension_with::<GeoDb>(GeoDbPlugin::default())?;
         while !runtime.resource::<GeoDb>().is_ready(MapKind::Heights) {
             runtime.run_sim_once();
             runtime.run_frame_once();
@@ -837,8 +810,8 @@ mod tests {
     fn test_height_mesh() -> Result<()> {
         let mut runtime = Runtime::new()?;
         runtime
-            .load_extension_with::<StdPaths>(StdPathsOpts::new("nitrogen"))?
-            .load_extension_with::<GeoDb>(GeoDbOpts::default())?;
+            .load_extension_with::<StdPaths>(StdPathsPlugin::new("nitrogen"))?
+            .load_extension_with::<GeoDb>(GeoDbPlugin::default())?;
         while !runtime.resource::<GeoDb>().is_ready(MapKind::Heights) {
             runtime.run_sim_once();
             runtime.run_frame_once();
@@ -881,4 +854,5 @@ mod tests {
         assert!(height > meters!(6000));
         Ok(())
     }
+     */
 }

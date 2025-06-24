@@ -12,7 +12,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-use absolute_unit::{scalar, Length, LengthUnit, Pt3, V3};
+use absolute_unit::{Length, LengthUnit, Pt3, V3, scalar};
 use glam::DVec3;
 
 #[derive(Clone, Debug)]

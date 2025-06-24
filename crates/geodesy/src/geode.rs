@@ -58,19 +58,11 @@ impl Geode {
     }
 
     pub fn latitude_direction_char(&self) -> char {
-        if self.lat < radians!(0_f64) {
-            'S'
-        } else {
-            'N'
-        }
+        if self.lat < radians!(0_f64) { 'S' } else { 'N' }
     }
 
     pub fn longitude_direction_char(&self) -> char {
-        if self.lon < radians!(0_f64) {
-            'W'
-        } else {
-            'E'
-        }
+        if self.lon < radians!(0_f64) { 'W' } else { 'E' }
     }
 
     pub fn sea_level(&self) -> Geodetic {

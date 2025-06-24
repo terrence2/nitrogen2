@@ -23,6 +23,7 @@ members = [
     "crates/geodb",
     "crates/geodesy",
     "crates/geometry",
+    "crates/runtime",
     "crates/xz_wrapper",
 ]
 
@@ -48,7 +49,7 @@ glam = { version = "0.29.3", features = ["approx", "mint", "serde"] }
 hashbag = "0.1"
 hifitime = "4.1"
 itertools = "0.14"
-log = "0.4"
+#log = "0.4"
 md5 = "0.7"
 memmap2 = "0.9"
 nalgebra = "0.33"
@@ -87,6 +88,7 @@ bevy = { version = "0.16", default-features = false, features = [
     "bevy_gilrs", # Adds gamepad support
     "bevy_gizmos", # Adds support for rendering gizmos
     "bevy_gltf", # glTF support
+    "bevy_log", # trace and log crate integration
     "bevy_mesh_picking_backend", # Provides an implementation for picking meshes
     "bevy_pbr", # Adds PBR rendering
     "bevy_picking", # Provides picking functionality
@@ -180,6 +182,7 @@ bevy = { version = "0.16", default-features = false, features = [
 absolute_unit = {  path = "crates/absolute_unit" }
 geodesy = { path = "crates/geodesy" }
 geometry = { path = "crates/geometry" }
+runtime = { path = "crates/runtime" }
 xz_wrapper = { path = "crates/xz_wrapper" }
 #dump-terrain-tables = { path = "apps/dump-terrain-tables" }
 #terrain = { path = "crates/terrain" }

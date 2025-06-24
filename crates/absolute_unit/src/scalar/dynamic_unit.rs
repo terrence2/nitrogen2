@@ -296,7 +296,7 @@ impl Div<DynamicUnits> for DynamicUnits {
 mod test {
     use super::*;
     use crate::{
-        kilograms_per_meter3, meters2, meters_per_second, scalar, Force, Meters, Newtons, Seconds,
+        Force, Meters, Newtons, Seconds, kilograms_per_meter3, meters_per_second, meters2, scalar,
     };
     use approx::assert_abs_diff_eq;
 

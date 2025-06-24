@@ -79,7 +79,7 @@ where
 //         Self::from(&ray)
 //     }
 // }
-// 
+//
 // impl From<&Ray<Meters>> for RapRay {
 //     fn from(ray: &Ray<Meters>) -> Self {
 //         RapRay::new(ray.origin().dvec3().into(), (*ray.direction()).into())

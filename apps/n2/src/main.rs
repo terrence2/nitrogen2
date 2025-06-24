@@ -12,7 +12,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
-use anyhow::Result;
 use bevy::{
     // asset::embedded_asset,
     diagnostic::FrameTimeDiagnosticsPlugin,
@@ -25,6 +24,7 @@ use bevy::{
 use bevy_egui::{EguiContexts, EguiPlugin};
 use bevy_rapier3d::prelude::*;
 use clap::Parser;
+use runtime::StdPathsPlugin;
 // use game_state::{ConfigurationPlugin, GameStatePlugin};
 
 #[derive(Parser)]
@@ -45,24 +45,24 @@ fn main() -> Result<()> {
                 ..default()
             });
         })
-            .edit_schedule(PreUpdate, |schedule| {
-                schedule.set_build_settings(ScheduleBuildSettings {
-                    ambiguity_detection: LogLevel::Warn,
-                    ..default()
-                });
-            })
-            .edit_schedule(Update, |schedule| {
-                schedule.set_build_settings(ScheduleBuildSettings {
-                    ambiguity_detection: LogLevel::Warn,
-                    ..default()
-                });
-            })
-            .edit_schedule(PostUpdate, |schedule| {
-                schedule.set_build_settings(ScheduleBuildSettings {
-                    ambiguity_detection: LogLevel::Warn,
-                    ..default()
-                });
+        .edit_schedule(PreUpdate, |schedule| {
+            schedule.set_build_settings(ScheduleBuildSettings {
+                ambiguity_detection: LogLevel::Warn,
+                ..default()
             });
+        })
+        .edit_schedule(Update, |schedule| {
+            schedule.set_build_settings(ScheduleBuildSettings {
+                ambiguity_detection: LogLevel::Warn,
+                ..default()
+            });
+        })
+        .edit_schedule(PostUpdate, |schedule| {
+            schedule.set_build_settings(ScheduleBuildSettings {
+                ambiguity_detection: LogLevel::Warn,
+                ..default()
+            });
+        });
     }
     app.add_plugins((
         (
@@ -93,11 +93,12 @@ fn main() -> Result<()> {
             },
             // RonAssetPlugin::<PuzzleDefinition>::new(&["definition.ron"]),
         ),
+        (StdPathsPlugin::new("nitrogen2"),),
     ))
-        .register_type::<Transform>()
-        .register_type::<Visibility>()
-        .add_systems(Startup, do_setup)
-        .add_systems(Update, do_input);
+    .register_type::<Transform>()
+    .register_type::<Visibility>()
+    .add_systems(Startup, do_setup)
+    .add_systems(Update, do_input);
 
     app.run();
 
