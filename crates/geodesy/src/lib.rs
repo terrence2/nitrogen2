@@ -65,3 +65,7 @@ use absolute_unit::{Length, Meters};
 pub const fn earth_radius() -> Length<Meters> {
     Length::<Meters>::new(6_356_766f64)
 }
+
+pub const fn everest_height() -> Length<Meters> {
+    Length::<Meters>::new(8_848.039_2)
+}

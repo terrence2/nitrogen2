@@ -25,6 +25,7 @@ use bevy_egui::{EguiContexts, EguiPlugin};
 use bevy_rapier3d::prelude::*;
 use clap::Parser;
 use runtime::StdPathsPlugin;
+use terrain::TerrainPlugin;
 // use game_state::{ConfigurationPlugin, GameStatePlugin};
 
 #[derive(Parser)]
@@ -93,7 +94,7 @@ fn main() -> Result<()> {
             },
             // RonAssetPlugin::<PuzzleDefinition>::new(&["definition.ron"]),
         ),
-        (StdPathsPlugin::new("nitrogen2"),),
+        (StdPathsPlugin::new("nitrogen2"), TerrainPlugin),
     ))
     .register_type::<Transform>()
     .register_type::<Visibility>()

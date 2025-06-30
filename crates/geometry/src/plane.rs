@@ -15,7 +15,7 @@
 use crate::algorithm::compute_normal;
 use absolute_unit::prelude::*;
 use approx::relative_eq;
-use glam::{DVec3, DVec4, Vec4Swizzles};
+use glam::{DVec3, DVec4, Vec3, Vec2, Vec4Swizzles};
 use std::fmt::Debug;
 
 // (x,y,z,1) dot (nx, ny, nz, -d) => ax + by + cz = d

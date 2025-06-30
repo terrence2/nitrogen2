@@ -328,9 +328,9 @@ fn make_index_dependency_luts(max_level: usize) -> Result<()> {
             i,
             deps.len() * 2,
             deps.iter()
-                .map(|e| format!("{},\n    {}", e.a, e.b))
+                .map(|e| format!("{}, {}", e.a, e.b))
                 .collect::<Vec<_>>()
-                .join(",\n    ")
+                .join(", ")
         );
     }
     let mut func = String::new();

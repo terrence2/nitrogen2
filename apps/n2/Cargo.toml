@@ -21,3 +21,4 @@ clap.workspace = true
 egui_extras.workspace = true
 # internal
 runtime.workspace = true
+terrain.workspace = true

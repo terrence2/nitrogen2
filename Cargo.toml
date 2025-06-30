@@ -24,15 +24,17 @@ members = [
     "crates/geodesy",
     "crates/geometry",
     "crates/runtime",
+    "crates/terrain",
     "crates/xz_wrapper",
 ]
 
 [workspace.dependencies]
 anyhow = "1.0"
 approx = "0.5"
-async-channel = "2.3"
-avian3d = { version = "0.3", default-features = false, features = ["3d", "f64", "parry-f64"] }
-bevy_atmosphere = { version = "0.13", default-features = false, features = ["detection", "dithering", "procedural", "nishita"] }
+#async-channel = "2.3"
+#avian3d = { version = "0.3", default-features = false, features = ["3d", "f64", "parry-f64"] }
+#bevy_atmosphere = { version = "0.13", default-features = false, features = ["detection", "dithering", "procedural", "nishita"] }
+bv = "0.11"
 clap = { version = "4.5", features = ["derive"] }
 egui_extras = { version = "0.31.1", features = ["image"] }
 bevy_common_assets = { version = "0.13", features = ["ron"] }
@@ -65,8 +67,9 @@ transform-gizmo-egui = "0.6"
 platform-dirs = "0.3"
 serde = "1.0"
 smallvec = "1.15"
+static_assertions = "1.1"
 time = { version = "0.3", features = ["local-offset"] }
-zerocopy = "0.8"
+zerocopy = { version = "0.8", features = ["derive"] }
 
 # with deep features
 #image = { version = "^ 0.25", default-features = false, features = [
@@ -184,8 +187,7 @@ geodesy = { path = "crates/geodesy" }
 geometry = { path = "crates/geometry" }
 runtime = { path = "crates/runtime" }
 xz_wrapper = { path = "crates/xz_wrapper" }
-#dump-terrain-tables = { path = "apps/dump-terrain-tables" }
-#terrain = { path = "crates/terrain" }
+terrain = { path = "crates/terrain" }
 
 # Change to emit debugging symbols when tracing is required
 [profile.release]

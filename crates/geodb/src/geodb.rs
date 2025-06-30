@@ -713,7 +713,7 @@ mod tests {
     use absolute_unit::degrees;
     use bevy::time::{Time as BevyTime, TimePlugin};
     use geodesy::Geode;
-    use runtime::{StdPathsPlugin};
+    use runtime::StdPathsPlugin;
 
     #[test]
     fn it_works() -> Result<()> {
@@ -739,7 +739,7 @@ mod tests {
                         );
                         for (name, state) in tiles {
                             assert_eq!(name.level(), OverviewLevel::new(10 - depth));
-                            if matches!(state, MapState::Ready {..}) {
+                            if matches!(state, MapState::Ready { .. }) {
                                 app_exit.write(AppExit::Success);
                             }
                         }
