@@ -17,8 +17,8 @@ use crate::{
     patch::{icosahedron::Icosahedron, patch_info::Patch, patch_winding::PatchWinding},
 };
 use absolute_unit::prelude::*;
-use bevy::prelude::*;
 use approx::assert_relative_eq;
+use bevy::prelude::*;
 use geometry::{Plane, algorithm::bisect_edge};
 use glam::DVec3;
 // use marker::Markers;

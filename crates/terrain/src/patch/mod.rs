@@ -17,13 +17,13 @@ pub(crate) mod patch_info;
 mod patch_manager;
 pub(crate) mod patch_tree;
 pub mod patch_winding;
-// pub mod terrain_upload_vertex;
+pub mod terrain_upload_vertex;
 // pub mod terrain_vertex;
 
 pub(crate) use crate::patch::{
-    patch_manager::PatchManager,
+    patch_manager::{PatchManager, PatchManagerPlugin},
     patch_tree::{PatchHandle, PatchTree},
-    // terrain_upload_vertex::TerrainUploadVertex,
+    terrain_upload_vertex::TerrainUploadVertex,
 };
 pub use crate::patch::{
     patch_winding::PatchWinding,

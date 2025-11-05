@@ -11,6 +11,7 @@ repository.workspace = true
 license.workspace = true
 
 [dependencies]
+absolute_unit.workspace = true
 anyhow.workspace = true
 approx.workspace = true
 bevy.workspace = true
@@ -28,7 +29,6 @@ smallvec.workspace = true
 #structopt.workspace = true
 zerocopy.workspace = true
 # internal deps
-absolute_unit.workspace = true
 geodesy.workspace = true
 geometry.workspace = true
 #nitrous.workspace = true

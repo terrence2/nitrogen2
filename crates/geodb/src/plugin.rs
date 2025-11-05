@@ -65,33 +65,24 @@ impl Plugin for GeoDbPlugin {
         let height_cog_url = self.tiles_height_url().to_string();
         let color_cog_url = self.tiles_color_url().to_string();
         app.add_systems(Startup, move |world: &mut World| {
-            connect_to_geodb(&height_cog_url, &color_cog_url, world)
+            let geodb = GeoDb::new(
+                world.resource::<StdPaths>().state_dir(),
+                &height_cog_url,
+                &color_cog_url,
+            )
+            .expect("failed to find GeoDB");
+            world.insert_resource(geodb);
         });
         app.add_systems(
             FixedPreUpdate,
             GeoDb::sys_check_downloads.in_set(GeoDbStep::CheckDownloads),
         );
+        // runtime.add_sim_system(
+        //     Self::sys_apply_tarmac_height
+        //         .pipe(report_errors)
+        //         .in_set(GeoDbStep::UpdateTarmacHeight)
+        //         .after(GeoDbStep::CheckDownloads),
+        // );
+        // runtime.register_event::<SelectedTarmacHeight>();
     }
-}
-
-fn connect_to_geodb(height_cog_url: &str, color_cog_url: &str, world: &mut World) -> Result<()> {
-    let geodb = GeoDb::new(
-        world.resource::<StdPaths>().state_dir(),
-        height_cog_url,
-        color_cog_url,
-    )?;
-    world.insert_resource(geodb);
-    // runtime.add_sim_system(
-    //     Self::sys_check_downloads
-    //         .pipe(report_errors)
-    //         .in_set(GeoDbStep::CheckDownloads),
-    // );
-    // runtime.add_sim_system(
-    //     Self::sys_apply_tarmac_height
-    //         .pipe(report_errors)
-    //         .in_set(GeoDbStep::UpdateTarmacHeight)
-    //         .after(GeoDbStep::CheckDownloads),
-    // );
-    // runtime.register_event::<SelectedTarmacHeight>();
-    Ok(())
 }

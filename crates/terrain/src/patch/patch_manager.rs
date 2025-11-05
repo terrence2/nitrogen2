@@ -13,12 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
 use crate::{
+    Terrain,
     common::OptimizeCamera,
     patch::{
         PatchHandle,
         PatchTree,
         PatchWinding,
-        // TerrainUploadVertex, TerrainVertex
+        TerrainUploadVertex,
+        // TerrainVertex
     },
     tables::{
         get_index_dependency_lut, get_tri_strip_index_range, get_tri_strip_indices,
@@ -26,7 +28,18 @@ use crate::{
     },
 };
 use absolute_unit::prelude::*;
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    render::{
+        Render,
+        // RenderStartup,
+        RenderApp,
+        RenderSet,
+        extract_resource::{ExtractResource, ExtractResourcePlugin},
+        render_resource::PipelineCache,
+        renderer::{RenderContext, RenderDevice, RenderQueue},
+    },
+};
 use geodesy::Geodetic;
 // use mantle::Gpu;
 // use marker::Markers;
@@ -35,6 +48,13 @@ use geodesy::Geodetic;
 use static_assertions::{assert_eq_align, assert_eq_size};
 use std::{f64::consts::FRAC_PI_2, fmt, mem, ops::Range};
 use zerocopy::{FromBytes, Immutable, IntoBytes};
+
+pub struct PatchManagerPlugin;
+impl Plugin for PatchManagerPlugin {
+    fn build(&self, app: &mut App) {
+        // app.sub_app_mut(RenderApp).add_systems(RenderStartup, init_patch_render_phase);
+    }
+}
 
 #[repr(C)]
 #[derive(IntoBytes, FromBytes, Immutable, Debug, Copy, Clone)]
@@ -75,7 +95,7 @@ pub(crate) struct PatchManager {
     // for patch-winding when doing the draw later.
     desired_patch_count: usize,
     live_patches: Vec<(PatchHandle, PatchWinding)>,
-    // live_vertices: Vec<TerrainUploadVertex>,
+    live_vertices: Vec<TerrainUploadVertex>,
     // CPU generated patch corner vertices. Input to subdivision.
     // patch_upload_buffer: wgpu::Buffer,
 
@@ -108,14 +128,64 @@ pub(crate) struct PatchManager {
      */
 }
 
+// impl ExtractResource for PatchManager {
+//     type Source = ();
+//
+//     fn extract_resource(source: &Self::Source) -> Self {
+//         todo!()
+//     }
+// }
+
 impl fmt::Debug for PatchManager {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "PatchManger")
     }
 }
 
+fn make_prepare_bind_group(
+    mut commands: Commands,
+    terrain: Res<Terrain>,
+    // gpu_images: Res<RenderAssets<GpuImage>>,
+    // game_of_life_images: Res<GameOfLifeImages>,
+    // game_of_life_uniforms: Res<GameOfLifeUniforms>,
+    render_device: Res<RenderDevice>,
+    pipeline_cache: Res<PipelineCache>,
+    // queue: Res<RenderQueue>,
+) {
+    println!("RUNNING MAKE PREPARE BIND GROUP");
+
+    // let view_a = gpu_images.get(&game_of_life_images.texture_a).unwrap();
+    // let view_b = gpu_images.get(&game_of_life_images.texture_b).unwrap();
+    //
+    // // Uniform buffer is used here to demonstrate how to set up a uniform in a compute shader
+    // // Alternatives such as storage buffers or push constants may be more suitable for your use case
+    // let mut uniform_buffer = UniformBuffer::from(game_of_life_uniforms.into_inner());
+    // uniform_buffer.write_buffer(&render_device, &queue);
+    //
+    // let bind_group_0 = render_device.create_bind_group(
+    //     Some("terrain-subdivide-prepare"),
+    //     &pipeline_cache.get_bind_group_layout(&pipeline.texture_bind_group_layout),
+    //     &BindGroupEntries::sequential((
+    //         &view_a.texture_view,
+    //         &view_b.texture_view,
+    //         &uniform_buffer,
+    //     )),
+    // );
+    // let bind_group_1 = render_device.create_bind_group(
+    //     None,
+    //     &pipeline_cache.get_bind_group_layout(&pipeline.texture_bind_group_layout),
+    //     &BindGroupEntries::sequential((
+    //         &view_b.texture_view,
+    //         &view_a.texture_view,
+    //         &uniform_buffer,
+    //     )),
+    // );
+    // commands.insert_resource(GameOfLifeImageBindGroups([bind_group_0, bind_group_1]));
+}
+
 impl PatchManager {
     pub fn new(
+        app: &mut App,
         max_level: usize,
         target_refinement: f64,
         desired_patch_count: usize,
@@ -124,7 +194,30 @@ impl PatchManager {
     ) -> Result<Self> {
         let patch_tree = PatchTree::new(max_level, target_refinement, desired_patch_count);
         let live_patches = Vec::with_capacity(desired_patch_count);
-        // let live_vertices = Vec::with_capacity(3 * desired_patch_count);
+        let live_vertices = Vec::with_capacity(3 * desired_patch_count);
+
+        let render_app = app.sub_app_mut(RenderApp);
+        render_app.add_systems(
+            Render,
+            make_prepare_bind_group.in_set(RenderSet::PrepareBindGroups),
+            // prepare_bind_group.in_set(RenderSet::PrepareBindGroups),
+        );
+        // app.add_plugins(ExtractResourcePlugin::<PatchManager>::default());
+        /*
+        // Extract the game of life image resource from the main world into the render world
+        // for operation on by the compute shader and display on the sprite.
+        app.add_plugins(ExtractResourcePlugin::<GameOfLifeImages>::default());
+
+        let render_app = app.sub_app_mut(RenderApp);
+        render_app.add_systems(
+            Render,
+            prepare_bind_group.in_set(RenderSet::PrepareBindGroups),
+        );
+
+        let mut render_graph = render_app.world_mut().resource_mut::<RenderGraph>();
+        render_graph.add_node(GameOfLifeLabel, GameOfLifeNode::default());
+        render_graph.add_node_edge(GameOfLifeLabel, bevy::render::graph::CameraDriverLabel);
+         */
 
         /*
         let patch_upload_stride = 3; // 3 vertices per patch in the upload buffer.
@@ -290,7 +383,7 @@ impl PatchManager {
             patch_tree,
             desired_patch_count,
             live_patches,
-            // live_vertices,
+            live_vertices,
             // patch_upload_buffer,
             // subdivide_context,
             // subdivide_prepare_pipeline,
@@ -349,10 +442,10 @@ impl PatchManager {
             .optimize_for_view(optimize_camera, &mut self.live_patches, gizmos);
         assert!(self.live_patches.len() <= self.desired_patch_count);
 
-        /*
         // Build CPU vertices for upload. Make sure to track visibility for our tile loader.
-        self.indirect_commands.clear();
         self.live_vertices.clear();
+        /*
+        self.indirect_commands.clear();
         let view = camera.world_to_eye_m();
         for (offset, (i, winding)) in self.live_patches.iter().enumerate() {
             if offset >= self.desired_patch_count {

@@ -1,5 +1,5 @@
 [package]
-name = "n2"
+name = "camera"
 description.workspace = true
 version.workspace = true
 authors.workspace = true
@@ -15,14 +15,5 @@ categories.workspace = true
 [dependencies]
 absolute_unit.workspace = true
 bevy.workspace = true
-bevy_egui.workspace = true
-bevy_framepace.workspace = true
-#bevy_rapier3d.workspace = true
-clap.workspace = true
-egui_extras.workspace = true
 # internal
-camera.workspace = true
-geodb.workspace = true
 geodesy.workspace = true
-runtime.workspace = true
-terrain.workspace = true

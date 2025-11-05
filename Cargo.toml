@@ -19,7 +19,7 @@ members = [
     "apps/dump-terrain-tables",
     "apps/n2",
     # Crates
-    "crates/absolute_unit",
+    "crates/camera",
     "crates/geodb",
     "crates/geodesy",
     "crates/geometry",
@@ -29,6 +29,7 @@ members = [
 ]
 
 [workspace.dependencies]
+absolute_unit = { version = "0.10", default-features = false, features = ["serde"] }
 anyhow = "1.0"
 approx = "0.5"
 #async-channel = "2.3"
@@ -36,33 +37,31 @@ approx = "0.5"
 #bevy_atmosphere = { version = "0.13", default-features = false, features = ["detection", "dithering", "procedural", "nishita"] }
 bv = "0.11"
 clap = { version = "4.5", features = ["derive"] }
-egui_extras = { version = "0.31.1", features = ["image"] }
-bevy_common_assets = { version = "0.13", features = ["ron"] }
-bevy_framepace = "0.19"
-bevy-inspector-egui = "0.31"
-bevy_rapier3d = "0.30"
-bevy_save = "0.18"
+egui_extras = { version = "0.33", features = ["image"] }
+#bevy_common_assets = { version = "0.14", features = ["ron"] }
+bevy_framepace = "0.20"
+#bevy-inspector-egui = "0.35"
+#bevy_rapier3d = "0.31"
 colored = "3.0"
 convolve2d = { version = "0.2", features = ["image"] }
 crossbeam = "0.8"
 egui_dock = "0.16" # pulls same version of egui as bevy_egui via bevy-inspector-egui
 enumset = "1.1"
-glam = { version = "0.29.3", features = ["approx", "mint", "serde"] }
+glam = { version = "0.30.9", features = ["approx", "mint", "serde"] }
 hashbag = "0.1"
 hifitime = "4.1"
 itertools = "0.14"
 #log = "0.4"
-md5 = "0.7"
+md5 = "0.8"
 memmap2 = "0.9"
-nalgebra = "0.33"
 num-traits = "0.2"
-ordered-float = { version = "4.6", default-features = false }
+ordered-float = { version = "5.1", default-features = false }
 parking_lot = "0.12"
 packed_struct = { git = "https://github.com/terrence2/packed_struct", tag = "0.2.0" }
 progress-streams = "1.1"
 rand = "0.8.5" # as pulled in by glam 29.2
 rayon = "1.10"
-ron = "0.8"
+ron = "0.11"
 transform-gizmo-egui = "0.6"
 platform-dirs = "0.3"
 serde = "1.0"
@@ -76,9 +75,9 @@ zerocopy = { version = "0.8", features = ["derive"] }
 #    "rayon", "jpeg", "png", "tiff", "ktx2", "dds"
 #] }
 # same version as bevy-inspector-egui 0.28
-bevy_egui = { version = "0.34.1", features = ["render"] }
-rusqlite = { version = "0.35", features = ["bundled", "time"] }
-bevy = { version = "0.16", default-features = false, features = [
+bevy_egui = { version = "0.38", features = ["render"] }
+#rusqlite = { version = "0.35", features = ["bundled", "time"] }
+bevy = { version = "0.17", default-features = false, features = [
     # Default
     #"android-game-activity", # Android GameActivity support. Default, choose between this and android-native-activity.
     #"android_shared_stdcxx", # Enable using a shared stdlib for cxx on Android
@@ -118,7 +117,7 @@ bevy = { version = "0.16", default-features = false, features = [
     #"vorbis", # OGG/VORBIS audio format support
     #"webgl2", # Enable some limitations to be able to use WebGL2. Please refer to the WebGL2 and WebGPU section of the examples README for more information on how to run Wasm builds with WebGPU.
     "x11", # X11 display server support
-    "zstd", # For KTX2 supercompression
+    #"zstd", # For KTX2 supercompression
     # Optional
     #"accesskit_unix", # Enable AccessKit on Unix backends (currently only works with experimental screen readers and forks.)
     #"android-native-activity", # Android NativeActivity support. Legacy, should be avoided for most new Android games.
@@ -182,12 +181,16 @@ bevy = { version = "0.16", default-features = false, features = [
 ] }
 
 # Nitrogen crates
-absolute_unit = {  path = "crates/absolute_unit" }
+camera = { path = "crates/camera" }
+geodb = { path = "crates/geodb" }
 geodesy = { path = "crates/geodesy" }
 geometry = { path = "crates/geometry" }
 runtime = { path = "crates/runtime" }
 xz_wrapper = { path = "crates/xz_wrapper" }
 terrain = { path = "crates/terrain" }
+
+[patch.crates-io]
+#absolute_unit = { path = "../absolute_unit" }
 
 # Change to emit debugging symbols when tracing is required
 [profile.release]

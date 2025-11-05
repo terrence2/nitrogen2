@@ -143,6 +143,9 @@ impl GeoDb {
     /// Synchronously find all tiles that would be required to serve pixels from the given
     /// extents, at the given angular resolution; return their names so that the display
     /// system (or other) can know if they have what they need to fulfil the current view.
+    ///
+    /// Also feeds any missing tiles to the background loader for download and import. Each
+    /// frame or interval, something should call check_downloads.
     pub fn map_region_to_tiles(
         &mut self,
         bb: &GeodeBB,

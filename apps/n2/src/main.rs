@@ -12,7 +12,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Nitrogen.  If not, see <http://www.gnu.org/licenses/>.
+use absolute_unit::prelude::*;
 use bevy::{
+    core_pipeline::tonemapping::Tonemapping,
     // asset::embedded_asset,
     diagnostic::FrameTimeDiagnosticsPlugin,
     ecs::schedule::{LogLevel, ScheduleBuildSettings},
@@ -21,9 +23,11 @@ use bevy::{
 };
 // use bevy_atmosphere::prelude::*;
 // use bevy_common_assets::ron::RonAssetPlugin;
-use bevy_egui::{EguiContexts, EguiPlugin};
-use bevy_rapier3d::prelude::*;
+use bevy_egui::{EguiContexts, EguiPlugin, EguiPrimaryContextPass};
+// use bevy_rapier3d::prelude::*;
+use camera::GeoCameraPlugin;
 use clap::Parser;
+use geodb::GeoDbPlugin;
 use runtime::StdPathsPlugin;
 use terrain::TerrainPlugin;
 // use game_state::{ConfigurationPlugin, GameStatePlugin};
@@ -32,7 +36,7 @@ use terrain::TerrainPlugin;
 #[command(version, about, long_about = None)]
 struct Cli {
     /// Turn on system ordering debugging.
-    #[arg(short, long, default_value = "true")]
+    #[arg(short, long, default_value = "false")]
     debug_order: bool,
 }
 
@@ -65,12 +69,13 @@ fn main() -> Result<()> {
             });
         });
     }
+
     app.add_plugins((
         (
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
                     mode: WindowMode::BorderlessFullscreen(MonitorSelection::Current),
-                    resolution: WindowResolution::new(1920., 1080.),
+                    resolution: WindowResolution::new(1920, 1080),
                     ..default()
                 }),
                 ..default()
@@ -82,23 +87,26 @@ fn main() -> Result<()> {
             // }),
             FrameTimeDiagnosticsPlugin::default(),
             bevy_framepace::FramepacePlugin, // reduces input lag
-            EguiPlugin {
-                enable_multipass_for_primary_context: false,
-            },
+            EguiPlugin::default(),
             // AtmospherePlugin,
             MeshPickingPlugin,
-            RapierPhysicsPlugin::<NoUserData>::default().in_fixed_schedule(),
-            RapierDebugRenderPlugin {
-                enabled: false,
-                ..default()
-            },
+            // RapierPhysicsPlugin::<NoUserData>::default().in_fixed_schedule(),
+            // RapierDebugRenderPlugin {
+            //     enabled: false,
+            //     ..default()
+            // },
             // RonAssetPlugin::<PuzzleDefinition>::new(&["definition.ron"]),
         ),
-        (StdPathsPlugin::new("nitrogen2"), TerrainPlugin),
+        (
+            StdPathsPlugin::new("nitrogen2"),
+            GeoCameraPlugin::default(),
+            GeoDbPlugin::default(),
+            TerrainPlugin,
+        ),
     ))
     .register_type::<Transform>()
     .register_type::<Visibility>()
-    .add_systems(Startup, do_setup)
+    .add_systems(EguiPrimaryContextPass, setup_egui_loaders.run_if(run_once))
     .add_systems(Update, do_input);
 
     app.run();
@@ -106,8 +114,8 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn do_setup(mut contexts: EguiContexts) {
-    egui_extras::install_image_loaders(contexts.ctx_mut());
+fn setup_egui_loaders(mut contexts: EguiContexts) {
+    egui_extras::install_image_loaders(contexts.ctx_mut().expect("egui context"));
 }
 
 fn do_input(keyboard: Res<ButtonInput<KeyCode>>, mut app_exit: EventWriter<AppExit>) {

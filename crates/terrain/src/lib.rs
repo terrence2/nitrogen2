@@ -2,13 +2,13 @@ mod common;
 mod patch;
 mod tables;
 
-use crate::patch::PatchManager;
+use crate::patch::PatchManagerPlugin;
 use bevy::{
     prelude::*,
     render::{
         Render, RenderApp, RenderSet,
         extract_resource::{ExtractResource, ExtractResourcePlugin},
-        render_asset::{RenderAssetUsages, RenderAssets},
+        render_asset::RenderAssets,
         render_graph::{self, RenderGraph, RenderLabel},
         render_resource::{binding_types::texture_storage_2d, *},
         renderer::{RenderContext, RenderDevice},
@@ -20,37 +20,55 @@ use std::borrow::Cow;
 
 #[derive(Resource)]
 pub struct Terrain {
-    patch_manager: PatchManager,
+    // patch_manager: PatchManager,
 }
 
 #[derive(Parser)]
-pub struct TerrainPlugin;
+pub struct TerrainPlugin {
+    geo_max_cpu_level: i32,
+    geo_target_refinement: f64,
+    geo_desired_patch_count: i32,
+    geo_gpu_subdivisions: i32,
+    tile_max_level: i32,
+    tile_target_refinement: f64,
+    tile_desired_patch_count: i32,
+    tile_cache_size: i32,
+}
+
+impl Default for TerrainPlugin {
+    // TODO: figure out our configuration and arguments story
+    fn default() -> Self {
+        Self {
+            geo_max_cpu_level: 16,
+            geo_target_refinement: 0.03,
+            geo_desired_patch_count: 400,
+            geo_gpu_subdivisions: 6,
+            tile_max_level: 10,
+            tile_target_refinement: 0.03,
+            tile_desired_patch_count: 200,
+            tile_cache_size: 768,
+        }
+    }
+}
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, RenderLabel)]
 pub struct TerrainLabel;
 
 impl Plugin for TerrainPlugin {
     fn build(&self, app: &mut App) {
-        // TODO: figure out our configuration and arguments story
-        let (
-            geo_max_cpu_level,
-            geo_target_refinement,
-            geo_desired_patch_count,
-            tile_max_level,
-            tile_target_refinement,
-            tile_desired_patch_count,
-        ) = (16, 0.03, 400, 10, 0.03, 200);
-        let (geo_gpu_subdivisions, tile_cache_size) = (6, 768);
 
-        app.insert_resource(Terrain {
-            patch_manager: PatchManager::new(
-                geo_max_cpu_level,
-                geo_target_refinement,
-                geo_desired_patch_count,
-                geo_gpu_subdivisions,
-            )
-            .unwrap(),
-        });
+        app.add_plugins((PatchManagerPlugin,));
+
+        // let patch_manager = PatchManager::new(
+        //     app,
+        //     geo_max_cpu_level,
+        //     geo_target_refinement,
+        //     geo_desired_patch_count,
+        //     geo_gpu_subdivisions,
+        // ).expect("patch manager");
+        // app.insert_resource(Terrain {
+        //     patch_manager
+        // });
 
         /*
         // Extract the game of life image resource from the main world into the render world
